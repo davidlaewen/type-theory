@@ -1,0 +1,69 @@
+% German language
+\usepackage[british]{babel}
+
+% URLs with correct linebreaks
+\usepackage{xurl}
+
+% Formula typesetting
+\usepackage{amsmath}
+\usepackage{bm} % bold math
+\usepackage{bbold}
+\usepackage{graphicx}
+\usepackage{syntax}
+\usepackage{bussproofs} % proof trees
+\usepackage{listings}
+\usepackage{stmaryrd}
+\usepackage{afterpage}
+\usepackage{tikz-cd}
+\usetikzlibrary{%
+    automata,
+    arrows.meta,
+    positioning,
+    decorations.pathmorphing,
+    shapes.geometric,
+    er
+}
+\usepackage{enumitem} % itemize customization
+\usepackage[most]{tcolorbox}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{placeins}
+\usepackage{mathtools}
+\usepackage{nicefrac}
+\usepackage{ifsym} % RA operators
+\usepackage{cancel}
+
+% Set up listings package
+\lstset{% general command to set parameter(s)
+  basicstyle=\color{black}\ttfamily,
+  keywordstyle=\color{\keywordCol}\bfseries,
+  %identifierstyle=\bfseries, % nothing happens
+  commentstyle=\color{\commentCol}, % grey comments
+  stringstyle=\ttfamily, % typewriter type for strings
+  showstringspaces=false, % no special string spaces
+  columns=fullflexible,
+  backgroundcolor=\color{gray!20!white},
+  frame=single, rulecolor=\color{gray!20!white},
+  xleftmargin=1.2mm, xrightmargin=1.2mm,
+  escapeinside=``,
+  keepspaces=true}
+
+% Set up the hyperref package
+\hypersetup{
+  pdftitle={\thesisTitle},    %   - title (PDF meta)
+% pdfsubject={thesis subject},%   - subject (PDF meta)
+  pdfauthor={David Läwen},    %   - author (PDF meta)
+  colorlinks=true,            %   - colorize links?
+  linktoc = all,              %   - sections and subsections linked
+  breaklinks=true,            %   - allow line break inside links
+% plainpages=false,
+% pdfborder={0 0 0},
+% bookmarksnumbered=true,
+% bookmarksopen=true
+}
+
+% Colour definitions
+\usepackage{xcolor}
+\definecolor{darkblue}{rgb}{0.2, 0.2, 0.6}
+\definecolor{lightblue}{rgb}{0.3, 0.6, 0.7}
+\definecolor{otherblue}{rgb}{0.0, 0.3, 0.4}
+\definecolor{purple}{rgb}{0.5, 0.0, 0.5}

@@ -1,0 +1,104 @@
+\section{Brief overview of the lambda calculus}
+
+There are two main forms of the lambda calculus: The untyped lambda calculus
+as well as many different flavours of typed lambda calculus.
+
+The grammar of the untyped lambda calculus is defined as follows:
+
+\begin{figure}[htbp]
+  \[
+  \begin{array}{r@{\hspace{.5em}}cl@{\hspace{2em}}r}
+    \multicolumn{4}{c}{x,y \in \textsc{Var}}\\[2mm]
+    t, t_i & \Coloneqq & x & \emph{Variable} \\
+    & | & (t_1\ t_2) & \emph{Application} \\
+    & | & (\lambda x. t) & \emph{Abstraction}
+  \end{array}
+  \]
+  \caption{The syntax of lambda calculus terms}
+  \Description{The syntax of lambda calculus terms}
+  \label{fig:lambda-calculus-grammar}
+\end{figure}
+
+\subsection{Notational conventions}
+Application is left-associative, e.g.:
+\[ xyz \equiv ((x y) z) \]
+
+Multiple abstractions can be contracted, e.g.:
+\[ \lambda x. \lambda y. \cdots \;\equiv\; \lambda x y. \cdots \]
+
+
+Abstractions bind weakly, e.g.:
+\[ \lambda x. t_1\ t_2 \equiv \lambda x. (t_1\ t_2) \]
+
+\subsection{Combinator terms}
+The following terms are used in \emph{combinatory logic} and referred to as
+\emph{combinators}:
+
+\[
+\begin{array}{ccl}
+  \mathbf{I} &\coloneqq& \lambda x. x \\
+  \mathbf{K} &\coloneqq& \lambda x y. x \\
+  \mathbf{S} &\coloneqq& \lambda x y z. x z (y z)
+\end{array}
+\]
+
+
+\subsection{Equivalence and reduction}
+Two terms $t_1$ and $t_2$ are \emph{equivalent}, written as $t_1 \equiv t_2$, if they
+denote the same AST, i.e. they only differ in parenthesis syntax.
+
+Two terms $t_1$ and $t_2$ are $\alpha$-equivalent, written as $t_1 =_\alpha t_2$, if
+they differ only in the naming of their variables, i.e. one term can be transformed
+into the other through consistent renaming of bound variables.
+
+The evaluation of lambda calculus terms is formalised in $\beta$-reduction, denoted
+by $\to_\beta$.
+The rule of $\beta$-reduction is written as
+\[ (\lambda x. M) N \to_\beta M[x \coloneqq N], \]
+where $M[x \coloneqq N]$ is equivalent to the term $M$ after replacing all bound
+occurrences of $x$ with $N$.
+Further, the reduction $M \to_\beta M'$ implies the following reductions:
+\[
+\begin{array}{ccc}
+  \lambda x. M &\to_\beta& \lambda x. M' \\
+  M N &\to_\beta& M' N \\
+  N M &\to_\beta& N M'
+\end{array}
+\]
+%
+That is, $\beta$-reduction may also be applied within subterms.
+
+We denote the reflective transitive closure of $\to_\beta$ with
+$\twoheadrightarrow_\beta$ and define $\beta$-equivalence as an equivalence relation
+$=_\beta$, whereby $t_1 =_\beta t_2$ \emph{iff} there exists a term $t'$ with
+$t_1 \twoheadrightarrow_\beta t'$ and $t_2 \twoheadrightarrow t'$.
+
+In the lambda calculus, $\beta$-reduction is \emph{confluent}, meaning that if the
+reduction of a term diverges (when $\to_\beta$ can be applied in multiple positions),
+the reduction will converge again and all reduction chains will lead to the same result.
+
+\subsection{Termination}
+A term is said to be in \emph{normal form} when it cannot be $\beta$-reduced any further.
+This is the case when the term does not feature any function applications $M\ N$.
+The reduction of a term is said to \emph{terminate} if applying $\to_\beta$ a finite
+number of times yields a term in normal form.
+
+In the general case, reduction does not terminate in the untyped lambda calculus.
+For instance, applying $\beta$-reduction to the term
+$\Omega \coloneqq (\lambda x. x\ x)\ (\lambda x. x\ x)$
+yields the term $\Omega$ itself, i.e. the term never reaches normal form.
+
+\subsection{Variable capture}
+Consider the reduction of the term $\mathbf{K}MN \equiv (\lambda x y. x)\ M\ N$:
+\begin{align*}
+  & (\lambda x y. x)\ M\ N \\
+  \to_\beta\ & (\lambda y. x)[x \coloneqq M] N \\
+  \to_\beta\ & (\lambda y. M) N
+\end{align*}
+%
+If the term $M$ happens to contain unbound occurrences of the variable $y$, these
+occurrences would be \emph{captured} when $M$ is substituted into the body of
+$\lambda y. \cdots$.
+In order prevent this ``unexpected'' behaviour, one must $\alpha$-rename $y$ and all its
+bound occurrences (there are none in this example) before performing the substitution
+of $x$ with $M$.

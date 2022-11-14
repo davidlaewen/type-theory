@@ -1,0 +1,82 @@
+\section{Inductive Types}
+Coq implements type checking for the so-called \emph{Calculus of Inductive Constructions} (\emph{CIC}),
+which is an extension of the \emph{Calculus of Constructions} (\emph{CC}, \emph{CoC} or $\lambda C$)
+with inductive types.
+The syntax and typing rules of CIC are too extensive to specify here, there is in fact no full formalisation.
+In CIC, the notion of $\beta$-reduction is replaced by what is known as $\beta\delta\iota\zeta\eta$-reduction,
+where $\delta$-reduction corresponds to unfolding of definitions, $\iota$-reduction relates to inductive types,
+$\zeta$-reduction relates to \verb|let| and $\eta$-reduction corresponds to the rule
+\[ \lambda x : A.\ (M\ x) \to_\eta M,\quad x \notin \text{FV}(M) .\]
+%
+In particular, $\iota$-reduction provides the ability to perform computation.
+
+Relative to $\lambda P$, CIC adds the following components:
+\begin{itemize}
+    \item Definitions and axioms
+    \item Inductive definitions
+    \item Type universes
+\end{itemize}
+
+Instead of having the form $\Gamma \turnstile t : \tau$, basic judgements in CIC are of the form
+$E[\Gamma] \turnstile t : \tau$, where $E$ denotes an environment containing definitions and inductive definitions.
+
+CIC extends the syntax of $\lambda P$ with a number of new constructs, including let-bindings of the form
+$\texttt{let}\ x \coloneqq t\ \texttt{in}\ t'$,
+pattern matches of the form $\verb|match|\ \hdots\ \verb|with|\ \hdots\ \verb|end|.$,
+recursive bindings with $\verb|fix|\ \hdots \coloneqq \hdots$ as well as
+constants $c$ from $E$.
+
+
+\subsection{Induction principles}
+For an inductive type, the dependent induction principle has the following form:
+\begin{enumerate}
+    \item For all parameters
+    \item and for all predicates $P$ on the type,
+    \item \textbf{if} $P$ is conserved under all constructors,
+    \item \textbf{then} $P$ holds on the whole type.
+\end{enumerate}
+
+The inductive type of even natural numbers is defined as follows in Coq:
+
+\begin{lstlisting}
+ Inductive even : nat `$\to$` Prop `$\coloneqq$`
+     | even_O : even O
+     | even_SS : `$\forall$` (n : nat), even n `$\to$` even (S (S n)).
+\end{lstlisting}
+%
+For this type, the dependent induction principle is given by:
+\begin{align*}
+    \forall\ P : (&\forall\ (n : \nat),\ \even\ n \to \texttt{Prop}), \\
+    &(P\ \texttt{O}\ \texttt{even\_O}) \\
+    &\to \forall\ (n : \nat)\ (H : \even\ n),\ P\ n\ H \to P\ (\Succ\ (\Succ\ n))\ (\texttt{even_SS}\ n\ H) \\
+    &\to \forall\ (n : \nat)\ (H : \even\ n),\ P\ n\ H.
+\end{align*}
+
+The corresponding non-dependent induction principle can be obtained from this by
+removing $\even\ n$ in the type of $P$, yielding $P : (\forall\ (n : \nat), \texttt{Prop})$,
+which simplifies to $P : (\nat \to \texttt{Prop})$.
+Adjusting all occurences of $P$ and simplifying by replacing quantifications with implications results in
+the following non-dependent principle:
+\begin{align*}
+    \forall\ P : (&\nat \to \texttt{Prop}), \\
+    (P&\ \texttt{O}) \\
+    &\to \forall\ (n : \nat),\ \even\ n \to P\ n\ \to P\ (\Succ\ (\Succ\ n)) \\
+    &\to \forall\ (n : \nat),\ \even\ n \to P\ n.
+\end{align*}
+
+
+\subsection{Inversion}
+The \texttt{inversion} tactic of Coq is used to transform inductive hypotheses.
+For instance, if the current assumption include a hypothesis $H$ of the form $\even\ n$,
+then $\texttt{inversion}\ H.$ transforms $H$ according to the induction principle of
+$\even$.
+This results in a case distinction in the proof with one case per case of $\even$ by which
+$H$ could be constructed.
+For \texttt{even_O}, this yields the new hypothesis $n = \Zero$ while for
+\texttt{even_SS}, two new hypotheses $\even\ m$ and $\Succ\ (\Succ\ m) = n$ are
+added to the context.
+
+For better ease of use, Coq applies some additional tactics ``behind the scenes'' when using \texttt{inversion}.
+These include \texttt{injection}, which can strip away matching constructor calls in equalities
+(e.g. transform $\Succ\ n = \Succ\ m$ to $n = m$)
+and \texttt{discriminate}, which removes goals with mismatched constructors (e.g. $\Succ\ n = \Zero$).

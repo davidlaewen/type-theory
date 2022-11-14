@@ -1,0 +1,28 @@
+\section{General information}
+
+This lecture concerns the verification of proofs using software,
+also referred to as \emph{formalisation}.
+
+In \emph{interactive theorem proving}, the programmer/user must
+specify their proof using a form of programming language.
+There are two main types of proof assistants:
+\begin{itemize}
+  \item Those using \emph{dependent types} (e.g. Coq, Agda, Lean)
+  \item Those using \emph{higher-order logic} (e.g. Isabelle, HOL4)
+\end{itemize}
+
+\subsection{Some terminology}
+\begin{infobox}
+  \textbf{Curry-Howard-de Bruĳn correspondence:}
+  The \emph{Curry-Howard-de Bruĳn correspondence} states that proofs in natural
+  deduction correspond to terms in the lambda calculus.
+  That is, proofs can be (en)coded as lambda calculus terms.
+
+  If there exists a $\lambda$ term with a given type, the proposition corresponding to
+  that type holds true.
+  In Coq, the term for a proof can be displayed with the $\texttt{Print.}$ command. \br
+  %
+  \textbf{Types:}
+  Since \emph{types} are ``axiomatic'' in type theory, they are somewhat difficult
+  to define. There several views/interpretations of types.
+\end{infobox}

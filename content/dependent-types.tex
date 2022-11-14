@@ -1,0 +1,433 @@
+\section{Dependent types}
+
+The underlying principle of dependent types is the \emph{generalisation} of function types
+by allowing types to \emph{depend} on terms.
+We go from function types of the form $A \to B$ to the form $\Pi x : A. B$
+(alternatively denoted as $\forall x : A. B$).
+
+We choose to discuss dependent types before polymorphic types since dependent types correspond to
+predicate logic, the most commonly used logic.
+The extension of STLC/$\STLC$ with dependent types is typically denoted with $\lambda P$.
+This new type system $\lambda P$ is the second out of a total of eight type systems contained in
+the so-called \emph{lambda cube} that will be discussed in the course.
+
+\subsection{Predicate logic}
+More precisely, $\lambda P$ corresponds to \emph{minimal} predicate logic, which consists only
+of quantification $\forall/\exists$ and implication $\to$,
+but we will instead consider full predicate logic in natural deduction style.
+
+\subsubsection{Syntax}
+
+\begin{figure}[htbp]
+    \[
+    \begin{array}{r@{\hspace{.5em}}cl@{\hspace{2em}}r}
+        \multicolumn{4}{c}{x,y \in \text{Variables}}\\
+        \multicolumn{4}{c}{f \in \text{Function names}}\\
+        \multicolumn{4}{c}{p \in \text{Predicate symbols}}\\[2mm]
+        %
+        M & \Coloneqq & x & \emph{Variable} \\
+        & | & f(M,...,M) & \emph{Function application}
+    \end{array}
+    \]
+    \caption{Term syntax of predicate logic}
+    \Description{Term syntax of predicate logic}
+    \label{fig:predicate-logic-term-syntax}
+\end{figure}
+
+\begin{figure}[htbp]
+    \[
+    \begin{array}{r@{\hspace{.5em}}cl@{\hspace{2em}}r}
+        A & \Coloneqq & p(M,...,M) & \emph{Predicate application} \\
+        & | & A \to A & \emph{Implication} \\
+        & | & \forall x. A & \emph{Universal quantification} \\
+        & | & \exists x. A & \emph{Existential quantification} \\
+        & | & \top & \emph{True} \\
+        & | & \bot & \emph{False} \\
+        & | & A \land A & \emph{Conjunction} \\
+        & | & A \lor A & \emph{Disjunction}
+    \end{array}
+    \]
+    \caption{Proposition syntax of predicate logic}
+    \Description{The syntax of propositions in predicate logic}
+    \label{fig:predicate-logic-prop-syntax}
+\end{figure}
+
+\Cref{fig:predicate-logic-term-syntax} shows the term syntax of predicate logic,
+assuming a finite number of functions $f$ with fixed arity.
+
+\Cref{fig:predicate-logic-prop-syntax} shows the proposition syntax, with the first four cases
+corresponding to those present in minimal predicate logic.
+
+Let us consider the proposition $\forall x. p(x) \to q(x)$.
+Typically, the $\forall$ quantifier binds \emph{weakly}, meaning that it would range only over $p(x)$,
+not the full implication.
+We instead use the notation of Coq, in which the $\forall$ ranges over the entire following proposition
+$p(x) \to q(x)$.
+
+Thus we must include parentheses around the first two clauses of the proposition
+\[ (\forall x. p(x) \to q(x)) \to (\forall x. p(x)) \to \forall x. q(x) ,\]
+which we will use as our running example.
+
+
+\subsubsection{Proof rules}
+The proof rules of predicate logic extend the rules we have previously seen for propositional logic
+in \cref{fig:natural-deduction-rules}, namely the rules $\Intro \True$, $\Elim \False$, $\Intro \land$, $\Elim \land$$l$, $\Elim \land$$r$, $\Intro \lor$$l$, $\Intro \lor$$r$, $\Elim \lor$, $\Intro[x] \smallTo$ and $\Elim \smallTo$.
+
+\begin{figure}[htbp]
+    \centering
+    %
+    \def\extraVskip{3pt}
+    \def\labelSpacing{6pt}
+    %
+    % Intro Forall
+    \AxiomC{$A$}
+    \RightLabel{$\Intro \forall$}
+    \UnaryInfC{$\forall x. A$}
+    \DisplayProof
+    \hskip 12mm
+    %
+    % Elim Forall
+    \AxiomC{$\forall x. A$}
+    \RightLabel{$\Elim \forall$}
+    \UnaryInfC{$A[x \coloneqq M]$}
+    \DisplayProof\brbr
+    %
+    % Intro Exists
+    \AxiomC{$A[x \coloneqq M]$}
+    \RightLabel{$\Intro \exists$}
+    \UnaryInfC{$\exists x. A$}
+    \DisplayProof
+    \hskip 12mm
+    %
+    % Elim Exists
+    \AxiomC{$\exists x. A$}
+    \AxiomC{$\forall x. (A \to C)$}
+    \RightLabel{$\Elim \exists$}
+    \BinaryInfC{$C$}
+    \DisplayProof
+
+    \caption{Proof rules of predicate logic}
+    \Description{Proof rules of predicate logic}
+    \label{fig:predicate-logic-rules}
+\end{figure}
+
+The additional rules in predicate logic are $\Intro \forall$, $\Elim \forall$,
+$\Intro \exists$ and $\Elim \exists$, shown in \cref{fig:predicate-logic-rules}.
+In rule $\Intro \forall$, the so-called \emph{variable condition} is imposed on $x$:
+The variable $x$ must not occur in any \emph{open assumptions}, i.e. any assumptions
+that have not yet been cancelled.
+(Further, $x$ must be a free variable, not bound by any surrounding quantifier.)
+Similarly, in $\Elim \exists$ the $x$ must not occur freely in $C$.
+
+We can observe what happens otherwise using the following example proposition:
+\[ \forall x. (p(x) \to \forall x. p(x)). \]
+This proposition is equivalent to $\forall x. (p(x) \to \forall y. p(y))$, but we will purposefully
+use a shadowed variable name instead.
+
+\begin{center}
+    \def\extraVskip{3pt}
+    \def\labelSpacing{6pt}
+
+    \AxiomC{\cancel{$p(x)$}}
+    \RightLabel{$\Intro \forall$}
+    \UnaryInfC{$\forall x. p(x)$}
+    \RightLabel{$\Intro[H]\smallTo$}
+    \UnaryInfC{$p(x) \to \forall x. p(x)$}
+    \RightLabel{$\Intro \forall$}
+    \UnaryInfC{$\forall x. (p(x) \to \forall x. p(x))$}
+    \DisplayProof
+    \brbr
+\end{center}
+
+Here, the second/upper application of $\Intro \forall$ does not satisfy the variable condition,
+thus leading to an invalid proof if assumption $H$ were to be applied in the final step.
+
+\subsubsection{Examples}
+Let us now prove the following proposition using our new proof rules:
+\[ (\exists x. \True) \to (\forall x.p(x)) \to \exists x. p(x) \]
+We require the first premise $\exists x. \True$ in order to ensure that the domain of the
+quantification over $x$ is inhabited. \\
+
+\begin{center}
+    \def\extraVskip{3pt}
+    \def\labelSpacing{6pt}
+
+    \AxiomC{$[(\exists x. \True)^{H_1}]$}
+
+
+    \AxiomC{$[( \forall x. p(x) )^{H_3}]$}
+    \RightLabel{$\Elim \forall$}
+    \UnaryInfC{$p(y)$}
+    \RightLabel{$\Intro \exists$}
+    \UnaryInfC{$\exists x. p(x)$}
+    %\AxiomC{$\forall x. ()$}
+    \RightLabel{$\Intro[H_3]\smallTo$}
+    \UnaryInfC{$(\forall x. p(x)) \to \exists x. p(x)$}
+    \RightLabel{$\Intro[H_2]\smallTo$}
+    \UnaryInfC{$\True \to (\forall x. p(x)) \to \exists x. p(x)$}
+    \RightLabel{$\Intro \forall$}
+    \UnaryInfC{$\forall y. (\True \to (\forall x. p(x)) \to \exists x. p(x))$}
+    \RightLabel{$\Elim \forall$}
+    \BinaryInfC{$(\forall x. p(x)) \to \exists x. p(x)$}
+    \RightLabel{$\Intro[H_1]\smallTo$}
+    \UnaryInfC{$(\exists x. \True) \to (\forall x. p(x)) \to \exists x. p(x)$}
+    \DisplayProof
+    \\[6mm]
+\end{center}
+
+Let us also prove our example proposition from earlier: \\
+
+\begin{center}
+    \def\extraVskip{3pt}
+    \def\labelSpacing{6pt}
+
+
+    \AxiomC{$[\forall x. p(x) \to q(x)]^{H_1}$}
+    \RightLabel{$\Elim \forall$}
+    \UnaryInfC{$p(x) \to q(x)$}
+
+    \AxiomC{$[\forall x. p(x)]^{H_2}$}
+    \RightLabel{$\Elim \forall$}
+    \UnaryInfC{$p(x)$}
+
+    \RightLabel{$\Elim\smallTo$}
+    \BinaryInfC{$q(x)$}
+    \RightLabel{$\Intro \forall$}
+    \UnaryInfC{$\forall x. q(x)$}
+    \RightLabel{$\Intro[H_2]\smallTo$}
+    \UnaryInfC{$(\forall x. p(x)) \to \forall x. q(x)$}
+    \RightLabel{$\Intro[H_1]\smallTo$}
+    \UnaryInfC{$(\forall x. p(x) \to q(x)) \to (\forall x. p(x)) \to \forall x. q(x)$}
+    \DisplayProof
+    \brbr
+\end{center}
+
+In minimal predicate logic, the rules $\Intro \smallTo$ and $\Intro \forall$ correspond to
+$\lambda$-abstraction in the proof term, while $\Elim \smallTo$ and $\Elim \forall$ correspond
+to function application.
+The proof term for the above proposition thus has the following form:
+\[ \lambda H_1: ...\ .\lambda H_2: ...\ .\lambda x: ...\ . (H_1 x) (H_2 x) \]
+
+\subsubsection{Curry-Howard-deBruĳn correspondence}
+Our four new proof rules $\Intro \forall$, $\Elim \forall$, $\Intro \exists$ and $\Elim \exists$
+correspond to the Coq tactics \verb|intro|, \verb|apply|, $\verb|exists|\ M$ and \verb|elim|, respectively.
+
+Further, we can extend our correspondence notion between proofs of propositions and programs:
+\begin{itemize}
+    \item A proof of $A \to B$ corresponds to a function from proofs of $A$ to proofs of $B$.
+    \item A proof of $A \land B$ corresponds to a \emph{pair} of a proof $A$ and a proof of $B$.
+    \item A proof of $\forall x. A$ corresponds to a \emph{dependent} function mapping any $x$
+          to a proof of $A$ that \emph{depends} on $x$.
+    \item A proof of $\exists x. A$ corresponds to a \emph{dependent} pair of an object $x$ and
+          a proof of $A$, which again \emph{depends} on $x$.
+\end{itemize}
+
+In fact, we can express a function type $A \to B$ as a dependent type $\Pi x : A. B$ where
+$x$ does not occur in $B$.
+
+
+\subsection{Type system of $\lambda P$}
+In simple type theory, types are either base types (e.g. \verb|nat|, \verb|bool|, ...) or they are
+function types $A \to B$.
+With the addition of dependent types, types may be parameterised with arbitrary other types and
+can accept types as arguments.
+For instance, the canonical example of dependent types is the type of \emph{vectors},
+i.e. the list type parameterised with the length of the list.
+
+But first, let us consider the definition of the list type (with elements of type \verb|nat|):
+
+\[
+    \begin{array}{l@{\hspace{1em}}cl@{\hspace{2em}}r}
+        \verb|list| & :: & * & \emph{List type} \\
+        \verb|nil| & :: & \verb|list| & \emph{Empty list} \\
+        \verb|cons| & :: & \verb|nat| \to \verb|list| \to \verb|list| & \emph{Non-empty list}
+    \end{array}\vspace{2mm}
+\]
+
+Here, the type \verb|list| also has a type and is typed with $*$.
+Before we discuss the reason for this, let us now define the type of lists of natural numbers
+with length $n$, the dependent vector type.
+
+\[
+    \begin{array}{l@{\hspace{1em}}cl@{\hspace{2em}}r}
+        \verb|vec| & :: & \verb|nat| \to * & \emph{Vector type} \\
+        \verb|vnil| & :: & \verb|vec|\,\, 0 & \emph{Empty vector} \\
+        \verb|vcons| & :: & \Pi n : \verb|nat|.\:\: \verb|nat| \to \verb|vec|\,\, n \to \verb|vec|\,\, (S\ n)
+        & \emph{Non-empty vector}
+    \end{array}\vspace{2mm}
+\]
+
+Given this definition, the vector $(1\ \ 2\ \ 3)$ is written as
+$\verb|vcons|\ \ 2\ \ 1\ \ (\verb|vcons|\ \ 1\ \ 2\ \ (\verb|vcons|\ \ 0\ \ 3))$.
+
+Proofs of $\forall x. A$ are elements of type $\Pi x:D.\ A$, where $D$ is the \emph{domain} of quantification for $x$.
+
+
+\subsubsection{Syntax}
+For $\lambda\smallTo$, we defined the syntax of terms (in \cref{fig:lambda-calculus-grammar}) and types (in \cref{fig:stlc-types-grammar}) in two separate grammars.
+In $\lambda P$ terms and types are merged and we no longer distinguish between the two.
+Instead, everything is a term.
+
+\begin{figure}[htbp]
+    \[
+    \begin{array}{r@{\hspace{.5em}}cl@{\hspace{2em}}r}
+      \multicolumn{4}{c}{x,y \in \textsc{Var}}\\[2mm]
+      t & \Coloneqq & x & \emph{Variables} \\
+      & | & t\ t' & \emph{Applications} \\
+      & | & \lambda x: t.\ t' & \emph{Abstractions} \\
+      & | & \Pi x : t.\ t' & \emph{Function types} \\
+      & | & s & \emph{Sorts} \br
+      %
+      s & \Coloneqq & \ast & \emph{Star} \\
+      & | & \square & \emph{Box}
+    \end{array}
+    \]
+    \caption{Syntax of $\lambda P$ preterms}
+    \Description{Syntax of $\lambda P$ preterms}
+    \label{fig:dependent-terms-grammar}
+\end{figure}
+
+The grammar of $\lambda P$ is shown in \cref{fig:dependent-terms-grammar}.
+It describes the set of \emph{preterms} of $\lambda P$, which (as for $\lambda\smallTo$) includes terms that are not well-typed.
+The term syntax includes a new notion of \emph{sorts}, encompassing the terms $\ast$ (\emph{star}) and $\square$ (\emph{box}).
+The box type $\square$ serves to ``stratify'' the typing relation:
+In $\lambda P$, every term other than $\square$ has a type. Repeatedly taking the type of any term will eventually
+yield $\square$.
+Reaching the sort level takes at most two steps from any term and since $\ast : \square$, one can take one more step
+from $\ast$ to $\square$.
+For instance, we get the following ``typing chain'' for the term $0$:
+\[ 0 : \verb|nat|,\quad \verb|nat| : \ast,\quad \ast : \square. \]
+
+
+\subsubsection{Typing rules}
+We can define the type system of $\lambda P$ in two ways: Operationally, by specifying a type checking algorithm,
+or inductively, be specifying the typing derivation rules.
+An algorithm for typing a given term is given as follows:
+\[
+    \begin{array}{rcl}
+        \type(\ast) & = & \square \\
+        \type(A \to B) & = & \type(B) \\
+        \type(\Pi x : A.\ B) & = & \type(B) \\
+        \type(\lambda x : A.\ M) & = & \Pi x : A.\ \type(M) \\
+        \type(M\ M') & = & \hdots
+    \end{array}
+\]
+
+The type system of $\lambda P$ consists of the typing rules shown in \cref{fig:dependent-typing-rules}.
+
+\begin{figure}[htbp]
+    \centering
+    %
+    \def\extraVskip{3pt}
+    \def\labelSpacing{3pt}
+    %
+    % Axiom/Start
+    \AxiomC{}
+    \RightLabel{\textsc{Start}}
+    \UnaryInfC{$\turnstile \ast : \square$}
+    \DisplayProof
+    \hskip 12mm
+    %
+    % Function types
+    \AxiomC{$\Gamma \turnstile A : \ast$}
+    \AxiomC{$\Gamma, x : A \turnstile B : s$}
+    \RightLabel{\textsc{Prod}}
+    \BinaryInfC{$\Gamma \turnstile (\Pi x : A.\ B) : s$}
+    \DisplayProof
+    \brbr
+    %
+    % Abstraction
+    \AxiomC{$\Gamma, x : A \turnstile M : B$}
+    \AxiomC{$\Gamma \turnstile (\Pi x : A.\ B) : s$}
+    \RightLabel{\textsc{Abs}}
+    \BinaryInfC{$\Gamma \turnstile (\lambda x : A.\ M) \;:\; \Pi x : A.\ B$}
+    \DisplayProof
+    \brbr
+    %
+    % Application
+    \AxiomC{$\Gamma \turnstile F \;:\; \Pi x : A.\ B$}
+    \AxiomC{$\Gamma \turnstile M : A$}
+    \RightLabel{\textsc{App}}
+    \BinaryInfC{$\Gamma \turnstile F\ M : B[x \coloneqq M]$}
+    \DisplayProof
+    \brbr
+    %
+    % Variable
+    \AxiomC{$\Gamma \turnstile A : s$}
+    \RightLabel{\textsc{Var}}
+    \UnaryInfC{$\Gamma, x : A \turnstile x : A$}
+    \DisplayProof
+    \hskip 12mm
+    %
+    % Variable v2
+    \AxiomC{$\Gamma \turnstile M : A$}
+    \AxiomC{$\Gamma \turnstile B : s$}
+    \RightLabel{\textsc{Weaken}}
+    \BinaryInfC{$\Gamma, y : B \turnstile M : A$}
+    \DisplayProof
+    \brbr
+    %
+    % β-equivalence
+    \AxiomC{$\Gamma \turnstile M : A$}
+    \AxiomC{$A =_\beta A'$}
+    \AxiomC{$\Gamma \turnstile A' : s$}
+    \RightLabel{\textsc{Convert}}
+    \TrinaryInfC{$\Gamma \turnstile M : A'$}
+    \DisplayProof
+
+    \caption{Typing rules of $\lambda P$}
+    \Description{Typing rules of $\lambda P$}
+    \label{fig:dependent-typing-rules}
+\end{figure}
+
+In the premises of the rules \textsc{Abs}, \textsc{Var}, \textsc{Weaken} and \textsc{Convert},
+the $s$ stands for either $\ast$ or $\square$.
+That is, each of these four rules is actually a shorthand for two rules, one where $s$ is $\ast$ and
+another where $s$ is $\square$.
+The \textsc{Start} rule is the only rule without a premise.
+Accordingly, all typing derivations in $\lambda P$ begin with the \textsc{Start} rule.
+
+If we can derive a judgement $\Gamma \turnstile M : A$ for some environment $\Gamma$, then $M$ and $A$ are
+\emph{terms}. Not all preterms defined in \cref{fig:dependent-terms-grammar} are terms.
+
+
+\subsubsection{Example} To illustrate the typing rules in \cref{fig:dependent-typing-rules}, let us derive the
+type of the identity function $\lambda x : a.\ x$.
+
+\begin{prooftreecustom}
+
+    \AxiomC{}
+    \RightLabel{\textsc{Start}}
+    \UnaryInfC{$\turnstile \ast : \square$}
+    \RightLabel{\textsc{Var}}
+    \UnaryInfC{$a : \ast \turnstile a : \ast$}
+    \RightLabel{\textsc{Var}}
+    \UnaryInfC{$a : \ast,\ x : a \turnstile x : a$}
+
+    \AxiomC{}
+    \RightLabel{\textsc{Start}}
+    \UnaryInfC{$\turnstile \ast : \square$}
+    \RightLabel{\textsc{Var}}
+    \UnaryInfC{$a : \ast \turnstile a : \ast$}
+
+
+    \AxiomC{}
+    \RightLabel{\textsc{Start}}
+    \UnaryInfC{$\turnstile \ast : \square$}
+    \RightLabel{\textsc{Var}}
+    \UnaryInfC{$a : \ast \turnstile a : \ast$}
+
+    \AxiomC{}
+    \RightLabel{\textsc{Start}}
+    \UnaryInfC{$\turnstile \ast : \square$}
+    \RightLabel{\textsc{Var}}
+    \UnaryInfC{$a : \ast \turnstile a : \ast$}
+
+    \RightLabel{\textsc{Weaken}}
+    \BinaryInfC{$a : \ast,\ x : a \turnstile a : \ast$}
+    \RightLabel{\textsc{Prod}}
+    \BinaryInfC{$a : \ast \turnstile (\Pi x : a.\ a) : \ast$}
+
+    \RightLabel{\textsc{Abs}}
+    \BinaryInfC{$a : \ast \turnstile (\lambda x : a.\ x) : \Pi x : a.\ a$}
+\end{prooftreecustom}

@@ -1,0 +1,103 @@
+% Use ACM small template without conference/journal headers and footers etc.
+\documentclass[acmsmall, nonacm, screen, dvipsnames]{acmart}
+
+% Display page numbers at top of page
+\settopmatter{printfolios=true}
+
+% Rights management information.
+\acmBooktitle{}
+
+% The majority of ACM publications use numbered citations and
+% references.  The command \citestyle{authoryear} switches to the
+% "author year" style.
+
+% Document metadata
+\newcommand{\thesisTitle}{Type Theory and Coq}
+\newcommand{\thesisDate}{\today}
+
+% Load further packages and definitions
+\input{packages.tex}
+\input{commands.tex}
+
+% End of the preamble, start of the body of the document source.
+\begin{document}
+
+\pretolerance=150 % greater tolerance for non-hyphenated line breaking
+\tolerance=200 % standard tolerance for hyphenated line breaking
+\emergencystretch=12pt
+\righthyphenmin=4 % only hyphenate 4 letters after word start
+\lefthyphenmin=4 % only hyphenate 4 letters before word end
+
+% Title page
+\thispagestyle{empty}
+\begin{titlepage}
+ \begin{center}
+  {\LARGE \mbox{} }\\
+  {\large \mbox{} \\
+  \mbox{} \\[4cm]}
+  {\huge Type Theory and Coq\\[2cm]}
+  {\Large\bf Lecture notes\\[1.5cm]}
+ {\large David Läwen}\\[0.5cm]
+\today\\[4cm]
+{\small\bf Winter semester 2022/23}\\[0.5cm]
+  \parbox{7cm}{%
+  	\begin{center}%
+  		{\large Freek Wiedijk \& Herman Geuvers}\\[1mm]
+		{\footnotesize
+			Radboud Universiteit Nijmegen\\
+			\mbox{} }%
+	\end{center}}
+  \end{center}
+\end{titlepage}
+
+% The "title" command has an optional parameter, allowing the author to define a "short title" to be used in page headers.
+\title{Type Theory and Coq -- Lecture Notes}
+
+% The "author" command and its associated commands are used to define the authors and their affiliations.
+\authorsaddresses{}
+
+\thispagestyle{empty}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}} % Moronic hack to remove "contents" entry from TOC
+\tableofcontents
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+\newpage
+
+% This command processes the author and affiliation and title information and builds the first part of the formatted document.
+% \maketitle
+
+% Set page counter
+\setcounter{page}{3}
+
+% Input content
+\input{content/organisation.tex}
+\input{content/general-info.tex}
+\input{content/lambda-calculus.tex}
+\input{content/stlc.tex}
+\input{content/curry-howard.tex}
+\input{content/dependent-types.tex}
+\input{content/inductive-types.tex}
+\input{content/lambda-cube.tex}
+\input{content/principal-types-type-checking.tex}
+\input{content/normalisation.tex}
+
+% The acknowledgments section is defined using the "acks" environment
+% \begin{acks}
+% ...
+% \end{acks}
+
+% If your work has an appendix, this is the place to put it.
+% Switches numbering from arabic numbers to letters.
+\appendix
+
+% \section{Appendix section}
+
+% \newpage
+
+% Literaturverzeichnis
+% Define the bibliography style and the name of the bibliography file.
+% \bibliographystyle{ACM-Reference-Format}
+% \bibliography{references}
+
+
+\end{document}
+\endinput

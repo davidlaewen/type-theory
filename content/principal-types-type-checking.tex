@@ -1,0 +1,382 @@
+\section{Principal types and type checking}
+The derivation rules of $\lambda\smallTo$ à la Church are formalised using contexts
+that declare the types of the variables:
+\[ \Gamma \Coloneqq \emptyset \;\;|\;\; \{ x : \tau \} \cup \Gamma \]
+
+There are three derivation rules, shown in \cref{fig:stt-derivation-rules}.
+A judgement of the form $\Gamma \turnstile_{\lambda\smallTo} M : \sigma$ states that there exists
+a derivation with these rules for the conclusion $\Gamma \turnstile M : \sigma$.
+%
+The derivation rules may be read from top to bottom as a form of inductive definition,
+i.e. ``if these conditions are met, the following holds''.
+They can also be read bottom to top as a form of ``type-checking algorithm'', since they
+show how to determine the type of a given term.
+%
+\begin{figure}[htbp]
+    \centering
+    %
+    \def\extraVskip{3pt}
+    \def\labelSpacing{3pt}
+    %
+    % T-Var
+    \AxiomC{$x : \tau \in \Gamma$}
+    \RightLabel{\textsc{T-Var}}
+    \UnaryInfC{$\Gamma \turnstile x : \tau$}
+    \DisplayProof
+    \hskip 6mm
+    %
+    % T-App
+    \AxiomC{$\Gamma \turnstile M : \sigma \to \tau$}
+    \AxiomC{$\Gamma \turnstile N : \sigma $}
+    \RightLabel{\textsc{T-App}}
+    \BinaryInfC{$\Gamma \turnstile M\ N \;:\; \tau$}
+    \DisplayProof
+    \hskip 6mm
+    %
+    % T-Abs
+    \AxiomC{$\Gamma, x : \sigma \turnstile P : \tau$}
+    \RightLabel{\textsc{T-Abs}}
+    \label{rule:stt-t-abs}
+    \UnaryInfC{$\Gamma \turnstile \lambda x : \sigma.\ P \;:\; \sigma \to \tau$}
+    \DisplayProof
+
+    \caption{Derivation rules of simple type theory à la Church}
+    \Description{Derivation rules of simple type theory à la Church}
+    \label{fig:stt-derivation-rules}
+\end{figure}
+
+Types and type systems play in important role in many programming languages:
+They provide a partial specification and allow certain errors to be detected prior to runtime.
+Type systems should also satisfy the \emph{subject reduction property}:
+If a term $M$ has type $\tau$ and $M$ $\beta$-reduces to $N$, then $N$ must also have type $\tau$.
+In $\lambda\smallTo$ as well as other systems of the lambda cube, the existence of a type derivation for
+a term also implies its termination.
+
+In the rule \textsc{T-Abs} in \cref{fig:stt-derivation-rules}, we see the role of the variable declaration in the $\lambda$-abstraction:
+The type $\sigma$ is given by the declaration and can simply be added to the context in order to typecheck the body.
+However, this somewhat defeats the purpose of a type system (in the context of programming),
+since it requires that the ``programmer'' knows the
+types of all variables, i.e. has already determined the type of the expression.
+
+\subsection{STT à la Curry}
+This leads us to ``typing à la Curry'',
+also referred to as a \emph{type assignment system}.
+Here, given an untyped term $M$, the type system attempts to assign a type $\sigma$ to $M$.
+In $\STLC$, the derivation rules remain identical apart for the \textsc{T-Abs} rule:
+
+\begin{center}
+    \begin{prooftreecustom}
+        \AxiomC{$\Gamma, x : \sigma \turnstile P : \tau$}
+        \RightLabel{\textsc{T-Abs}}
+        \UnaryInfC{$\Gamma \turnstile \lambda x.\ P \;:\; \sigma \to \tau$}
+    \end{prooftreecustom}
+\end{center}\vspace{2mm}
+
+Read from top to bottom, the rule has hardly changed -- the type of $x$ is simply no longer annotated
+in the term.
+From a type-checking point of view though, this change means that one must ``guess'' the type of $x$
+in order to continue upwards and type the term.
+A consequence of including the type annotations in the $\lambda$-abstractions
+is that terms have unique types
+(i.e. the type of a term is unambiguously established by the annotations)
+and that determining the type of a term is more or less trivial.
+%
+By contrast, terms in Curry style do not possess a unique type, e.g.
+$\lambda x. x$ can be typed with $\alpha \to \alpha$, but also with
+$(\beta \to \beta) \to (\beta \to \beta)$ as well as infinitely many
+other types.
+
+Fortunately, there exists a notion of \emph{principal types}, where
+the principal type of a term \emph{subsumes} all other possible type
+assignments.
+In the example above, $(\beta \to \beta) \to (\beta \to \beta)$
+is an instance of $\alpha \to \alpha$ via the
+substitution $\alpha \coloneqq (\beta \to \beta)$,
+this holds true analogously for all other types assignable to $\lambda x. x$.
+
+\subsubsection{Example}
+To illustrate further, consider the Church-style term
+\[ \lambda x : \alpha.\ \lambda y : (\beta \to \alpha) \to \alpha.\
+    y\ (\lambda z : \beta.\ x), \]
+with the unambiguous type
+$\alpha \to ((\beta \to \alpha) \to \alpha) \to \alpha$.
+
+Removing the type annotations yields the term
+$\lambda x.\ \lambda y.\ y\ (\lambda z.\ x)$,
+which can be assigned infinitely many types, e.g.
+\[ \alpha \to ((\beta \to \alpha) \to \alpha) \to \alpha, \]
+\[ (\alpha \to \alpha) \to ((\beta \to \alpha \to \alpha)
+    \to \gamma) \to \gamma), \]
+\[ \vdots \]
+%
+Again, all these types are subsumed (via substitution) by a
+single principal type, namely
+\[ \alpha \to ((\beta \to \alpha) \to \gamma) \to \gamma .\]
+
+\subsubsection{Erasure map}
+The connection between STT à la Curry and à la Church can be formally
+defined by the \emph{erasure} map $| - |$, which removes all type
+annotations from a given term.
+The erasure map is defined inductively as follows:
+\begin{align*}
+    |x| &\coloneqq x \\
+    |M\ N| &\coloneqq M\ N \\
+    | \lambda x : \tau.\ M | &\coloneqq \lambda x.\ |M|
+\end{align*}
+
+In the case of our example above, we may write
+\[ | \lambda x : \alpha.\ \lambda y : (\beta \to \alpha) \to \alpha.\
+    y\ (\lambda z : \beta.\ x) |
+    = \lambda x.\ \lambda y.\ y\ (\lambda z.\ x) .\]
+
+
+\subsection{Computing principle types in STT}
+For a given Curry-style term, one can proceed by the following steps
+to check whether the term is typeable and if so,
+to determine its principal type:
+\begin{enumerate}
+    \item Assign a type variable to every term variable.
+    \item Assign a type variable to every \emph{applicative subterm}.
+    \item Determine the \emph{preliminary} type of the term from the
+          assigned type variables.
+    \item Determine the set $E$ of equations between the type variables
+          (one per application).
+    \item Solve $E$ by determining the \emph{minimal} substitution $S$
+          such that all equations are satisfied.
+    \item Apply $S$ to the preliminary type to obtain the principal type of the term.
+\end{enumerate}
+
+As an example, consider the term
+\[ \lambda x.\ \lambda y.\ y (\lambda z.\ y\ x) .\]
+%
+In step (1), we assign $x : \alpha$, $y : \beta$ and
+$z : \gamma$, resulting in the annotated term
+\[ \lambda x^\alpha.\ \lambda y^\beta.\ y^\beta
+    (\lambda z^\gamma.\ y^\beta\ x^\alpha) .\]
+%
+We then perform step (2), assigning $(y\ x) : \delta$ and
+$(y\ (\lambda z.\ y\ x)) : \varepsilon$.
+The preliminary type of the term is then given by
+$\alpha \to \beta \to \varepsilon$.
+%
+In step (4), we determine the following set of equations:
+\[ E = \begin{cases}
+    \;\beta = \alpha \to \delta \\
+    \;\beta = (\gamma \to \delta) \to \varepsilon
+\end{cases} \]
+
+Our substitution $S$ that solves $E$ must have the form
+$[\alpha_1 \coloneqq \tau_1,\ \dots,\ \alpha_n \coloneqq \tau_n]$,
+where all $\alpha_i$ are distinct type variables and no $\alpha_i$
+occurs in any $\tau_j$.
+$S$ should be a \emph{unifier} of all equations in $E$, i.e.
+for each $(\sigma = \tau) \in E$, applying $S$ on both sides
+should satisfy the equation: $\sigma\ S = \tau\ S$.
+
+More specifically, we want $S$ to be the \emph{most general unifier}
+(\emph{mgu}) of $E$, meaning that the $S$ is the ``minimal'' substitution
+that satisfies $E$:
+\begin{itemize}
+    \item For all $(\sigma = \tau) \in E:\ \sigma\ S = \tau\ S$
+    \item For all substitutions $T$ that solve $E$,
+          there exists a substitution $R$ with $T = R; S$.
+\end{itemize}
+Here, $S;T$ denotes the composition of $T$ after $S$,
+i.e. $\tau\ (T; S) = (\tau\ T)\ S$.
+Using the above terminology and notation, we can now formalise the notion
+of a \emph{principal type}:
+%
+The type $\sigma$ is the principal type of the term $M$ if
+$M : \sigma$ is derivable in STT and if for all types $\tau$,
+$M : \tau \RA \exists S : \tau = \sigma\ S$.
+
+There exists and algorithm that takes an untyped term $M$ as input and outputs
+the principal type, if $M$ is typeable, or \textsf{Fail} otherwise.
+This requires determining the most general unifier of the
+set of equations $E$, which is achieved via \emph{unification}.
+
+
+\subsubsection{Unification}
+The unification algorithm $U$ accepts as input a sequence
+$\langle \sigma_1 = \tau_1,\ \dots,\ \sigma_n = \tau_n \rangle$
+of \emph{type equality constraints}
+and returns
+\begin{itemize}
+    \item either the most general unifying substitution $S$ solving the
+          constraint set or
+    \item \textsf{Fail}, if the constraints cannot be unified.
+\end{itemize}
+
+Algorithm $U$ is defined by the following steps:
+\[
+\begin{array}{rcl}
+    % Remove trivial equality
+    \multicolumn{3}{l}{\text{Remove trivial equality:}} \\
+    U(\langle \alpha = \alpha, \set{\sigma_i = \tau_i} \rangle) &\coloneqq&
+    U(\langle \set{\sigma_i = \tau_i} \rangle) \br
+    % Occurs check failure
+    % U(\langle \alpha = \tau_1, \set{\sigma_i = \tau_i} \rangle) &\coloneqq&
+    % \textsf{Fail},\ \text{if}\ \alpha \in FV(\tau_1), \alpha \neq \tau_1 \\
+    % Flip equality
+    \multicolumn{3}{l}{\text{Flip type variable to the left:}} \\
+    U(\langle \sigma_1 = \alpha, \set{\sigma_i = \tau_i} \rangle) &\coloneqq&
+    U(\langle \alpha = \sigma_1, \set{\sigma_i = \tau_i} \rangle) \br
+    % Perform substitution
+    \multicolumn{3}{l}{\text{Apply substitution:}} \\
+    U(\langle \alpha = \tau_1, \set{\sigma_i = \tau_i} \rangle) &\coloneqq&
+    [ \alpha \coloneqq V(\tau_1),\ V ]\ \text{if}\ \alpha \notin FV(\tau_1), \text{where} \\
+    & & \quad\quad V = U( \langle
+        \set{ \sigma_i[\alpha \coloneqq \tau_1] = \tau_i[\alpha \coloneqq \tau_1] }
+        \rangle ) \br
+    % Decompose function types
+    \multicolumn{3}{l}{\text{Decompose ($\to$):}} \\
+    \quad U(\langle \sigma \to \sigma' = \tau \to \tau', \set{\sigma_i = \tau_i} \rangle) &\coloneqq&
+    U(\langle \sigma = \tau, \sigma' = \tau', \set{\sigma_i = \tau_i} \rangle)
+\end{array}
+\]
+
+If none of the above steps applies, the algorithm returns \textsf{Fail}.
+In particular, if $\alpha \in FV(\tau_1)$ in the third case
+(i.e. the so-called \emph{occurs check} fails),
+the constraints cannot be unified, resulting in \textsf{Fail}.
+
+\subsubsection{Example}
+Let us perform the unification algorithm for our previous example:
+\[
+    E = \begin{cases}
+        \;\beta = \alpha \to \delta \\
+        \;\beta = (\gamma \to \delta) \to \varepsilon
+    \end{cases}
+    %
+    \overset{\beta\ \coloneqq\ \alpha \to \delta}{\LRA}\;
+    %
+    \begin{cases}
+        \;\beta = \alpha \to \delta \\
+        \;\alpha \to \delta = (\gamma \to \delta) \to \varepsilon
+    \end{cases}
+\]\vspace{1mm}
+\[
+    \overset{\text{Decomp.}\ \to}{\LRA}\;
+    %
+    \begin{cases}
+        \;\beta = \alpha \to \delta \\
+        \;\alpha = \gamma \to \delta \\
+        \;\delta = \varepsilon
+    \end{cases}
+    %
+    \overset{\alpha\ \coloneqq\ \gamma \to \delta}{\LRA}
+    %
+    \begin{cases}
+        \;\beta = (\gamma \to \delta) \to \delta \\
+        \;\alpha = \gamma \to \delta \\
+        \;\delta = \varepsilon
+    \end{cases}
+    %
+    \overset{\delta\ \coloneqq\ \varepsilon}{\LRA}
+    %
+    \begin{cases}
+        \;\beta = (\gamma \to \varepsilon) \to \varepsilon \\
+        \;\alpha = \gamma \to \varepsilon \\
+        \;\delta = \varepsilon
+    \end{cases}
+\]
+
+We obtain the substitution
+$S = [\beta \coloneqq (\gamma \to \varepsilon) \to \varepsilon,\
+\alpha \coloneqq \gamma \to \varepsilon,\ \delta \coloneqq \varepsilon]$,
+which we apply to the preliminary type $\alpha \to \beta \to \varepsilon$.
+The resulting principal type of the term
+$\lambda x.\ \lambda y.\ y\ (\lambda z.\ y\ z)$ is
+\[ (\alpha \to \beta \to \varepsilon)\ S =
+    (\gamma \to \varepsilon) \to ((\gamma \to \varepsilon) \to \varepsilon)
+    \to \varepsilon . \]
+
+
+\subsection{Type checking in $\lambda P$}
+The type system of $\lambda P$ has the following properties:
+\begin{itemize}
+    \item Uniqueness of types:
+          If $\Gamma \turnstile M : \sigma$ and $\Gamma \turnstile M : \tau$,
+          then $\sigma =_\beta \tau$.
+    \item Subject reduction:
+          If $\Gamma \turnstile M : \sigma$ and $M \to_\beta N$,
+          then $N : \sigma$.
+    \item Strong normalisation:
+          If $\Gamma \turnstile M : \sigma$, then all $\beta$-reductions
+          from $M$ terminate.
+\end{itemize}
+
+For $\lambda P$, the type inhabitation problem corresponds to
+provability in minimal predicate logic.
+Accordingly, it is undecidable.
+
+
+\subsubsection{Type checking algorithm}
+Type checking for $\lambda P$ is performed by two algorithms:
+\begin{itemize}
+    \item $\Ok(-)$ takes a context as input and returns
+          either $\textsf{true}$ or $\textsf{false}$.
+    \item $\Type_-(-)$ takes a context and term as inputs
+          and returns either a term or \textsf{false}.
+\end{itemize}
+
+The algorithm $\Type_-(-)$ should be \emph{sound}, i.e.
+\[ \Type_\Gamma(M) = A \;\RA\; \Gamma \turnstile M : A, \]
+and \emph{complete}, i.e.
+\[ \Gamma \turnstile M : A \;\RA\; \Type_\Gamma(M) =_\beta A .\]
+
+$\Ok(-)$ and $\Type_-(-)$ are defined by:
+\[
+\begin{array}{rcl}
+    \Ok(\emptyset) & \ceq & \textsf{true} \\
+    \Ok(\Gamma, x : A) & \ceq & \Type_\Gamma(A) \in \{ \ast, \square \} \\[1mm]
+    %
+    \Type_\Gamma(x) & \ceq & \begin{cases}
+        A,\ \text{if}\ \Ok(\Gamma)\ \text{and}\ x : A \in \Gamma \\
+        \textsf{false},\ \text{otherwise}
+    \end{cases} \brbr
+    %
+    \Type_\Gamma(\ast) & \ceq & \begin{cases}
+        \square,\ \text{if}\ \Ok(\Gamma) \\
+        \textsf{fail},\ \text{otherwise}
+    \end{cases} \brbr
+    %
+    \Type_\Gamma(M\ N) & \ceq & \begin{cases}
+        B[x \ceq N],\ \text{if}\ \Type_\Gamma(M) \eval_\beta \Pi x:A.\ B\ \text{and} \\
+        \hphantom{B[x \ceq N],\ \text{if}\ }
+        \Type_\Gamma(N) =_\beta A \\
+        %
+        \textsf{false},\ \text{otherwise}
+    \end{cases} \\[6mm]
+    %
+    \Type_\Gamma(\lambda x : A.\ M) & \ceq & \begin{cases}
+        \Pi x : A.\ B,\ \text{if}\ \Type_{\Gamma, x : A}(M) = B\ \text{and} \\
+        \hphantom{\Pi x : A.\ B,\ \text{if}\ }
+        \Type_\Gamma(\Pi x : A.\ B) \in \{ \ast, \square \} \\
+        %
+        \textsf{fail},\ \text{otherwise}
+    \end{cases}
+\end{array}
+\]
+
+While completeness implies that $\Type$ terminates on all well-typed
+terms, it does not guarantee that $\Type$ terminates on all
+preterms/pseudo-terms.
+Thus the termination of $\Type$ on arbitrary preterms must also be proven
+in order to be certain that the type checking algorithm is ``useful''.
+
+In the corresponding proof, there are two interesting cases:
+\begin{itemize}
+    \item Abstraction $\lambda x : A.\ M$:
+          Here, the second recursive call of $\Type$ is not on a smaller term.
+          However, the condition $\Type_\Gamma(\Pi x : A.\ B) \in \{ \ast, \square \}$
+          can be replaced by $\Type_\Gamma(A) \in \{ \ast \}$, such that
+          the recursion is performed on a subterm.
+    %
+    \item Application $M\ N$: This case requires the decidability of
+          ($\eval_\beta$) and ($=_\beta$).
+          Termination of ($\eval_\beta$) follows from the soundness of $\Type$
+          (which can be assumed inductively for the recursive calls)
+          and $\beta$-equality is decidable if a term is well-typed
+          (true for $C$ and $D$ by the induction hypothesis).
+\end{itemize}

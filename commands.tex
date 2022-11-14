@@ -1,0 +1,86 @@
+% Paragraph breaks
+\newcommand{\br}{\\[2mm]}
+\newcommand{\brbr}{\\[4mm]}
+
+% Definitions - Math environment
+\newcommand{\RA}{\Rightarrow} % shorthands for implication and equivalence arrows
+\newcommand{\LA}{\Leftarrow}
+\newcommand{\LongRA}{\Longrightarrow}
+\newcommand{\LongLA}{\Longleftarrow}
+\newcommand{\LRA}{\Leftrightarrow}
+\newcommand{\LongLRA}{\Longleftrightarrow}
+
+\newcommand{\ceq}{\coloneqq}
+\newcommand{\cceq}{\Coloneqq}
+% \newcommand{\cEq}{\mathrel{\vcenter{\hbox{$:$}}\raisebox{0.01em}{$=$}}}
+% \newcommand{\ccEq}{\mathrel{\vcenter{\hbox{::}}\raisebox{0.01em}{$=$}}}
+
+% Notation
+\newcommand{\set}[1]{\overline{#1}} % Overlined list/set notation
+\newcommand{\mini}[1]{{\scriptscriptstyle #1}} % Smaller exponents
+\newcommand{\meta}[1]{\langle #1 \rangle}
+
+% Operators
+\newcommand{\dash}{\text{---}}
+\newcommand{\turnstile}{\ensuremath{\vdash}}
+\newcommand{\eval}{\twoheadrightarrow}
+\newcommand{\Ok}{\textsf{Ok}}
+\newcommand{\Type}{\textsf{Type}}
+
+% Symbols
+\newcommand{\bigO}{\mathcal{O}}
+\newcommand{\smallTo}{\ensuremath{\kern -.25em \shortrightarrow}}
+\newcommand{\STLC}{\ensuremath{\lambda\smallTo}}
+
+% Terms and types
+\newcommand{\True}{\top}
+\newcommand{\False}{\bot}
+\newcommand{\type}{\texttt{type}}
+\newcommand{\isType}{\text{type}}
+\newcommand{\nat}{\texttt{nat}}
+\newcommand{\Zero}{\texttt{O}}
+\newcommand{\Succ}{\texttt{S}}
+\newcommand{\even}{\texttt{even}}
+
+% Rule names
+\newcommand{\Intro}{\text{I}}
+\newcommand{\Elim}{\text{E}}
+
+% Join operators
+\newcommand{\join}{\mathrel{\triangleright\mkern-3.6mu\triangleleft}} % RA operators
+\newcommand{\lsemijoin}{\ltimes}
+\newcommand{\rsemijoin}{\rtimes}
+\newcommand{\lantijoin}{\triangleright}
+\newcommand{\rantijoin}{\triangleleft}
+\def\ojoin{\setbox0=\hbox{$\join$}%
+    \rule[0.166ex]{.23em}{.6pt}\llap{\rule[0.887ex]{.23em}{.6pt}}}
+\def\louterjoin{\mathbin{\ojoin\mkern-5.8mu\join}}
+
+
+% Font styles
+\newcommand{\textsfit}[1]{\text{\sffamily\itshape#1\kern+0.12em}}
+\newcommand{\keyword}[1]{\textbf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+% Colour definitions
+\newcommand{\keywordCol}{RoyalPurple}
+\newcommand{\commentCol}{CadetBlue}
+
+
+% Environment definitons
+\newenvironment{prooftreecustom}
+	{\begin{prooftree}\def\extraVskip{4pt}\def\labelSpacing{3pt}}
+	{\end{prooftree}}
+
+\newenvironment{infobox} % info boxes
+	{\begin{tcolorbox}[colback=lightblue!12!white,colframe=lightblue,coltext=otherblue,boxrule=.4mm]}
+	{\end{tcolorbox}}
+
+\newtcolorbox{codebox}{% code boxes
+    colback=gray!20!white, %
+    colframe=gray!20!white, %
+    sharp corners}
+
+\newenvironment{simplebox} % simple outline box
+    {\begin{tcolorbox}[colback=white,colframe=black,sharp corners,boxrule=0.2mm]}
+	{\end{tcolorbox}}

@@ -1,0 +1,298 @@
+\section{The Lambda Cube}
+So far, we have discussed the simply-typed lambda calculus $\lambda\smallTo$ and its extension by
+types that bind (depend on) terms in $\lambda P$.
+We will now consider a different dimension of extensibility: Terms that can bind types.
+This corresponds to the vertical dimension of the lambda cube.
+
+\begin{figure}[htbp]
+    $\square$
+    \caption{The lambda (aka Barendregt) cube}
+\end{figure}
+
+The lambda cube can be interpreted as follows:
+In all systems in the lambda cube, there is a hierarchy consisting of terms/objects, types and kinds,
+where terms are typed with types, types are typed with kinds and kinds are typed with $\square$.
+The following table illustrates this with some examples:
+
+\begin{center}
+    \begin{tabular}{c|c|c|c}
+        Term & Type & Kind & $\square$ \\
+        \hline
+        $0$ & $\nat$ & $\ast$ & \\
+        $S$ & $\nat \to \nat$ & $\ast$ & \\
+        \verb|nil| & \verb|list| & $\ast$ & \\
+        \verb|vnil| & $\verb|vec|\ 0$ & $\ast$ & \\
+        & \verb|vec| & $\nat \to \ast$ & $\square$ \\
+        $\lambda x : \nat.\ x$ & $\nat \to \nat$ & $\ast$ &
+    \end{tabular}
+\end{center}
+
+Given a type $\Pi x : A.\ B$, we can choose to allow either types or kinds for $A$ and $B$, respectively.
+This gives use 4 possible combinations:
+\begin{itemize}
+    \item $A$ and $B$ are both types: This is the case in $\lambda\smallTo$.
+    Here, $\Pi x : A.\ B$ is equivalent to the function type $A \to B$, which describes terms that can bind terms.
+
+    \item $A$ is a type, $B$ is a kind: This corresponds to $\lambda P$, where functions take terms as inputs
+    and return either terms or types, i.e. $\lambda\smallTo$ with the addition of types that can bind terms.
+    Allowing kinds for $B$ corresponds to moving right in the lambda cube.
+
+    \item $A$ is a kind, $B$ is a type: This yields $\lambda\smallTo$ with \emph{polymorphism},
+    known as $\lambda 2$ or \emph{System F}.
+    Here, functions take terms or types as inputs and return terms, i.e. terms can additionally bind types.
+    This corresponds to moving upwards within the lambda cube.
+
+    \item $A$ is a kind, $B$ is a kind: Allowing kinds for both $A$ and $B$ corresponds to moving into the back
+    plane of the lambda cube.
+\end{itemize}
+
+The ``canonical'' example of a polymorphic type is that of the identity function
+$\Lambda a : \ast.\ (\lambda x : a.\ x)$ with the type
+$\Pi a : \ast.\ (\Pi x : a.\ a)$, which (since $x$ does not occur in $a$) can also be written as
+$\Pi a : \ast.\ a \to a$.
+
+\subsection{Pure type systems}
+All the systems we have studied so far belong to a family of type systems known as \emph{pure type systems}
+(\emph{PTSs}).
+Pure type systems are defined by a triple $(S, A, R)$ where $S$ is a finite set of sorts,
+$A \subseteq S \times S$ is the set of \emph{axioms}
+and $R \subseteq S \times S \times S$ is the set of \emph{rules}.
+Within the lambda cube, $S$ is the set $\{ \ast, \square \}$ and $A$ contains only one element,
+namely $(\ast, \square)$.
+
+The syntax of all pure type systems is identical to that of $\lambda P$ shown in \cref{fig:dependent-terms-grammar},
+but with $s \in S$ rather than $s \Coloneqq \ast\;\; |\;\; \square$ specifically.
+In the derivation rules, the \textsc{Start} rule shown in \cref{fig:dependent-typing-rules} is replaced with
+a set of rules corresponding to the elements of $A$, given by
+\begin{center}
+    \begin{prooftreecustom}
+        \AxiomC{}
+        \RightLabel{$(s_1,s_2) \in A$.}
+        \UnaryInfC{$\turnstile s_1 : s_2$}
+    \end{prooftreecustom}
+\end{center}\vspace{2mm}
+
+Similarly, the \textsc{Prod} rule is replaced by the following set of rules:
+\begin{center}
+    \begin{prooftreecustom}
+        \AxiomC{$\Gamma \turnstile A : s_1$}
+        \AxiomC{$\Gamma,\ x : A \turnstile B : s_2$}
+        \RightLabel{$(s_1, s_2, s_3) \in R$}
+        \BinaryInfC{$\Gamma \turnstile (\Pi x : A.\ B) : s_3$}
+    \end{prooftreecustom}
+\end{center}\vspace{1mm}
+
+There are various interesting properties that hold for all pure type systems.
+
+
+\subsection{Polymorphic types}
+For the formalisation of $\lambda 2$, we could in principal use the same syntax as for $\lambda P$.
+In the interest of conciseness and following convention we will however define a new syntax,
+shown in \cref{fig:polymorphic-types-terms-syntax}.
+
+\begin{figure}[htbp]
+    \[
+    \begin{array}{r@{\hspace{.5em}}cl@{\hspace{2em}}r}
+        \multicolumn{4}{c}{\alpha, \beta \in \textsc{TVar} \quad\quad x,y \in \textsc{Var}} \br
+        %
+        \tau & \Coloneqq & \alpha & \emph{Type variables} \\
+        & | & \tau \to \tau' & \emph{Function types} \\
+        & | & \forall \alpha.\ \tau & \emph{Universal types} \br
+        %
+        t & \Coloneqq & x & \emph{Variables} \\
+        & | & t\ t' & \emph{Applications} \\
+        & | & \lambda x: t.\ t' & \emph{Abstractions} \\
+        & | & t\ \tau & \emph{Type applications} \\
+        & | & \Lambda \alpha. t & \emph{Type abstractions}
+    \end{array}
+    \]
+    \caption{Syntax of $\lambda 2$ types and preterms}
+    \Description{Syntax of $\lambda 2$ types and preterms}
+    \label{fig:polymorphic-types-terms-syntax}
+\end{figure}
+
+In this syntax, $\forall \alpha. \tau$ can be understood as a shorthand for the type
+$\Pi \alpha : \ast.\ \tau$ and $\Lambda \alpha. t$ as a shorthand for $\lambda \alpha : \ast.\ t$.
+
+The derivation rules of $\lambda 2$ are those of $\lambda\smallTo$ with the addition of the rules in
+\cref{fig:polymorphic-derivation-rules}.
+Typing judgements for $\lambda 2$ have the form $\Delta; \Gamma \turnstile t : \tau$, where $\Delta$ denotes
+a second context containing the bound type variables.
+
+\begin{figure}[htbp]
+    \centering
+    %
+    \def\extraVskip{3pt}
+    \def\labelSpacing{3pt}
+    %
+    % Type Abstraction
+    \AxiomC{$\Delta, \alpha\ \text{type}; \Gamma \turnstile t : \tau $}
+    \AxiomC{$\alpha \notin FV(\Gamma)$}
+    \RightLabel{\textsc{T-TypeAbs}}
+    \BinaryInfC{$\Delta; \Gamma \turnstile (\Lambda \alpha.\ t) : \forall \alpha. \tau$}
+    \DisplayProof
+    \hskip 6mm
+    %
+    % Type Application
+    \AxiomC{$\Delta; \Gamma \turnstile t : \forall \alpha. \sigma$}
+    \AxiomC{$\Delta \turnstile \tau\ \text{type}$}
+    \RightLabel{\textsc{T-TypeApp}}
+    \BinaryInfC{$\Delta; \Gamma \turnstile (t\ \tau) : \sigma[\tau / \alpha]$}
+    \DisplayProof
+    %
+    \caption{New typing rules in $\lambda 2$}
+    \label{fig:polymorphic-derivation-rules}
+\end{figure}
+
+In \textsc{T-TypeAbs}, the type variable $\alpha$ bound by $\Lambda \alpha.\ t$ is added to $\Delta$,
+while in \textsc{T-TypeApp}, the premise demands the \emph{type formation} judgement $\Delta \turnstile \tau$,
+which states that $\tau$ is well-formed and contains only bound type variables.
+The rules of the type formation judgement are shown in \cref{fig:type-formation-rules}.
+
+\begin{figure}[htbp]
+    \centering
+    %
+    \def\extraVskip{3pt}
+    \def\labelSpacing{3pt}
+    %
+    % Type variable
+    \AxiomC{}
+    \UnaryInfC{$\Delta; \tau\ \isType \turnstile \tau\ \isType$}
+    \DisplayProof
+    \hskip 6mm
+    %
+    % Arrow type
+    \AxiomC{$\Delta \turnstile \tau\ \isType$}
+    \AxiomC{$\Delta \turnstile \sigma\ \isType$}
+    \BinaryInfC{$\Delta \turnstile (\tau \to \sigma)\ \isType$}
+    \DisplayProof
+    \hskip 6mm
+    %
+    % Polymorphic type
+    \AxiomC{$\Delta, \alpha\ \isType \turnstile \tau\ \isType$}
+    \UnaryInfC{$\Delta \turnstile (\forall \alpha. \tau)\ \isType$}
+    \DisplayProof
+    %
+    \caption{Rules of the type formation judgement}
+    \label{fig:type-formation-rules}
+\end{figure}
+
+
+
+\subsection{Second-order propositional logic}
+By the Curry-Howard correspondence, $\lambda 2$ corresponds to \emph{second-order} propositional logic.
+While first-order logic quantifies over \emph{objects}, second-order logic additionally quantifies over
+sets as well as $k$-ary relations and functions.
+As there are no objects in propositional logic, second-order propositional logic quantifies only over
+propositions.
+In contrast to $\lambda\smallTo$ and $\lambda P$, the corresponding logic for $\lambda 2$ is not minimal,
+but is instead full second-order propositional logic.
+The syntax of second order propositional logic is given in \cref{fig:second-order-prop-logic-syntax}.
+
+\begin{figure}[htbp]
+    \[
+    \begin{array}{r@{\hspace{.5em}}cl@{\hspace{2em}}r}
+        A, B & \Coloneqq & a & \emph{Variables} \\
+        & | & A \to B & \emph{Implications} \\
+        & | & \forall a. A & \emph{Universal quantifications}
+    \end{array}
+    \]
+    \caption{Syntax of second-order propositional logic}
+    \Description{Syntax of second-order propositional logic}
+    \label{fig:second-order-prop-logic-syntax}
+\end{figure}
+
+The derivation rules are include the $\Intro[x]\smallTo$ and $\Elim \smallTo$ as in propositional logic
+together with the rules in \cref{fig:second-order-prop-logic-rules}.
+
+\begin{figure}[htbp]
+    \centering
+    %
+    \def\extraVskip{3pt}
+    \def\labelSpacing{6pt}
+    %
+    % Intro Forall
+    \AxiomC{$A$}
+    \RightLabel{$\Intro \forall$}
+    \UnaryInfC{$\forall a. A$}
+    \DisplayProof
+    \hskip 12mm
+    %
+    % Elim Forall
+    \AxiomC{$\forall a. A$}
+    \RightLabel{$\Elim \forall$}
+    \UnaryInfC{$A[a \coloneqq B]$}
+    \DisplayProof
+    %
+    \caption{Proof rules of second-order propositional logic}
+    \label{fig:second-order-prop-logic-rules}
+\end{figure}
+
+As in $\lambda P$, the rule $\Intro[x]\smallTo$ requires that $a$ must not occur freely in open assumptions.
+In contrast to the $\Elim\forall$ rule in $\lambda P$, $a$ is substituted by a proposition $B$ rather than
+a term $M$.
+
+The constructs $A \land B$, $A \lor B$, $\False$ and $\exists a. A$ can be expressed
+using the syntax of \cref{fig:second-order-prop-logic-syntax} as follows:
+
+\begin{center}
+    \begin{tabular}{l|l}
+        Construct & Definition \\
+        \hline
+        $A \land B$ & $\forall c.\ (A \to B \to c) \to c$ \\
+        $A \lor B$ & $\forall c.\ (A \to c) \to (B \to c) \to c$ \\
+        $\False$ & $\forall c.c$ \\
+        $\exists a. A$ & $\forall c.\ ((\forall a.\ A \to c) \to c)$
+    \end{tabular}
+\end{center}\vspace{2mm}
+
+These definitions correspond to the elimination rules, but we can show that they also yield the expected introduction rules.
+For instance, the we can show that $\Intro\lor$$l$ holds:
+
+\begin{center}
+    \begin{prooftreecustom}
+        \AxiomC{$[(A \to C)^x]$}
+        \AxiomC{$\vdots$}
+        \noLine
+        \UnaryInfC{$A$}
+        \RightLabel{$E\smallTo$}
+        \BinaryInfC{$C$}
+
+        \RightLabel{$\Intro[y]\smallTo$}
+        \UnaryInfC{$(B \to C) \to C$}
+
+        \RightLabel{$\Intro[x]\smallTo$}
+        \UnaryInfC{$(A \to C) \to (B \to C) \to C$}
+        \RightLabel{$\Intro\forall$}
+        \UnaryInfC{$\forall c.\ (A \to c) \to (B \to c) \to c$}
+    \end{prooftreecustom}
+\end{center}
+
+Similarly, we can prove that our definition of $\exists a. A$ matches the $\Elim\exists$ rule
+in \cref{fig:predicate-logic-rules}:
+
+\begin{center}
+    \begin{prooftreecustom}
+        \AxiomC{$[(\forall a.\ A \to c)^x]$}
+        \RightLabel{$\Elim \forall$}
+        \UnaryInfC{$A \to c$}
+
+        \AxiomC{$\vdots$}
+        \noLine
+        \UnaryInfC{$A$}
+
+        \RightLabel{$\Elim\smallTo$}
+        \BinaryInfC{$c$}
+        \RightLabel{$\Intro[x]\smallTo$}
+        \UnaryInfC{$(\forall a.\ A \to c) \to c$}
+        \RightLabel{$\Intro\forall$}
+        \UnaryInfC{$\forall c.\ ((\forall a.\ A \to c) \to c)$}
+    \end{prooftreecustom}
+\end{center}
+
+
+
+
+
+% https://brightspace.ru.nl/d2l/le/content/333305/viewContent/1922380/View
+% 1:06:45

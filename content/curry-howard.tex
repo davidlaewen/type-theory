@@ -1,0 +1,244 @@
+\section{Curry-Howard-de Bruijn correspondence}
+
+The \emph{Curry-Howard-de Bruĳn correspondence} denotes a correspondence between
+logic and computation.
+More specifically, proofs in logic correspond to terms in the lambda calculus
+while logical propositions correspond to types.
+Providing a proof for a proposition corresponds to providing a term
+with a given type, showing that is inhabited.
+Conversely, false propositions correspond to empty (or uninhabited) types.
+
+For instance, the logical $\top$ (true) can be thought of as equivalent to the
+\emph{Unit} type $\mathbb{1}$, while $\bot$ (false) corresponds to the empty type
+$\mathbb{0}$.
+Conjunction $A \land B$ corresponds to the pair/tuple type $A \times B$ (cartesian product), while
+disjunction $A \lor B$ corresponds to the \emph{Either} type $A + B$ (disjunct sum).
+Finally, implications $A \to B$ correspond to function types $A \to B$.
+
+\subsection{Brouwer-Heyting-Kolmogorov (BHK) interpretation}
+\emph{Propositional logic} includes negation $\neg$, conjunction $\land$, disjunction $\lor$, implication $\to$ and equivalence $\leftrightarrow$.
+In the weaker subset of \emph{intuitionistic propositional logic}, the same connectives exist, but the following laws do not hold:
+\begin{itemize}
+    \item $A \lor \neg A$: Law of excluded middle
+    \item $\neg \neg A \to A$: Double negation elimination
+    \item $((A \to B) \to A) \to A$: Peirce's law
+\end{itemize}
+%
+These three laws are equivalent: Each of the laws implies the other two (proofs in \texttt{hw03.v}).
+
+An even weaker subset of intuitionistic logic is \emph{minimal propositional logic}, in which implication $(\to)$
+is the only connective. Minimal propositional logic corresponds to simple type theory.
+
+\subsection{Propositional logic}
+We define the syntax of propositional logic as follows:
+\begin{figure}[htbp]
+    \[
+    \begin{array}{r@{\hspace{.5em}}cl@{\hspace{.2em}}r}
+        \multicolumn{4}{c}{a,b,c \in \textsc{Atom}}\\[2mm]
+        A, B, C & \Coloneqq & a & \emph{Atomic propositions} \\
+        & | & \top & \emph{True} \\
+        & | & \bot & \emph{False} \\
+        & | & (A \land B) & \emph{Conjunction} \\
+        & | & (A \lor B) & \emph{Disjunction} \\
+        & | & (A \to B) & \emph{Implication} \\
+    \end{array}
+    \]
+    \caption{Syntax of propositional logic}
+    \Description{Syntax of propositional logic}
+    \label{fig:prop-logic-grammar}
+\end{figure}
+
+Negation $(\neg)$ appears to be missing here, but $\neg A$ is in fact just a shorthand for $A \to \bot$.
+In addition, $A \leftrightarrow B$ is also just ``syntactic sugar'' for $(A \to B) \land (B \to A)$.
+
+The rules of propositional logic are those of \emph{natural deduction}, shown in \cref{fig:natural-deduction-rules}.
+They are split into \emph{introduction} and \emph{elimination} rules.
+
+\begin{figure}[H]
+    \centering
+    %
+    \def\extraVskip{3pt}
+    \def\labelSpacing{6pt}
+    % Intro True
+    \AxiomC{}
+    \RightLabel{$\Intro\top$}
+    \UnaryInfC{$\top$}
+    \DisplayProof
+    \hskip 12mm
+    %
+    % Elim False
+    \AxiomC{$\bot$}
+    \RightLabel{\textsc{E$\bot$}}
+    \UnaryInfC{$A$}
+    \DisplayProof\brbr
+    %
+    % Intro And
+    \AxiomC{$A$}
+    \AxiomC{$B$}
+    \RightLabel{$\Intro\land$}
+    \BinaryInfC{$A \land B$}
+    \DisplayProof \hskip 12mm
+    %
+    % Elim And Left
+    \AxiomC{$A \land B$}
+    \RightLabel{\text{E$\land$$l$}}
+    \UnaryInfC{$A$}
+    \DisplayProof \hskip 12mm
+    %
+    % Elim And Right
+    \AxiomC{$A \land B$}
+    \RightLabel{\text{E$\land$$r$}}
+    \UnaryInfC{$B$}
+    \DisplayProof\brbr
+    %
+    % Intro Or Left
+    \AxiomC{$A$}
+    \RightLabel{\text{I$\lor$$l$}}
+    \UnaryInfC{$A \lor B$}
+    \DisplayProof \hskip 12mm
+    %
+    % Intro Or Right
+    \AxiomC{$B$}
+    \RightLabel{\text{I$\lor$$r$}}
+    \UnaryInfC{$A \lor B$}
+    \DisplayProof \hskip 12mm
+    %
+    % Elim Or
+    \AxiomC{$A \lor B$}
+    \AxiomC{$A \to C$}
+    \AxiomC{$B \to C$}
+    \RightLabel{\text{E$\lor$}}
+    \TrinaryInfC{$C$}
+    \DisplayProof\brbr
+    %
+    % Intro Impl
+    \AxiomC{$\begin{matrix}[A^x]\\[-1.5mm]\vdots\\ B\end{matrix}$}
+    \RightLabel{$\Intro[x]\smallTo$}
+    \UnaryInfC{$A \to B$}
+    \DisplayProof \hskip 12mm
+    %
+    % Elim Impl
+    \AxiomC{$A \to B$}
+    \AxiomC{$A$}
+    \RightLabel{$\Elim \smallTo$}
+    \BinaryInfC{$B$}
+    \DisplayProof
+
+    \caption{The rules of natural deduction}
+    \Description{The rules of natural deduction}
+    \label{fig:natural-deduction-rules}
+\end{figure}
+
+In the rules, the context containing our assumptions is kept implicit, we simply use markers
+$x, y, z, \hdots$ to indicate where we use which assumption.
+Alternatively, we could also make the context $\Gamma$ explicit. Using this notation, the rules for
+minimal logic are written as follows: \\
+
+\begin{center}
+    \def\extraVskip{3pt}
+    \def\labelSpacing{6pt}
+    %
+    % Context
+    \AxiomC{$A \in \Gamma$}
+    \UnaryInfC{$\Gamma \turnstile A$}
+    \DisplayProof \hskip 12mm
+    %
+    % Intro Impl
+    \AxiomC{$\Gamma, A \turnstile B$}
+    \RightLabel{$\Intro[x]\smallTo$}
+    \UnaryInfC{$A \to B$}
+    \DisplayProof \hskip 12mm
+    %
+    % Elim Impl
+    \AxiomC{$\Gamma \turnstile A \to B$}
+    \AxiomC{$\Gamma \turnstile A$}
+    \RightLabel{$\Elim \smallTo$}
+    \BinaryInfC{$\Gamma \turnstile B$}
+    \DisplayProof
+    \\[6mm]
+\end{center}
+
+
+\subsubsection{Example}
+Let us prove $a \lor b \to b \lor a$. \\
+
+\begin{center}
+    \def\extraVskip{3pt}
+    \def\labelSpacing{6pt}
+
+    \AxiomC{$[(a \lor b)^x]$}
+
+    \AxiomC{$[a^y]$}
+    \RightLabel{I$\lor$$r$}
+    \UnaryInfC{$b \lor a$}
+    \RightLabel{$\Intro[y]\smallTo$}
+    \UnaryInfC{$a \to b \lor a$}
+
+    \AxiomC{$[b^z]$}
+    \RightLabel{I$\lor$$l$}
+    \UnaryInfC{$b \lor a$}
+    \RightLabel{$\Intro[z]\smallTo$}
+    \UnaryInfC{$b \to b \lor a$}
+
+    \RightLabel{E$\lor$}
+    \TrinaryInfC{$b \lor a$}
+    \RightLabel{$\Intro[x]\smallTo$}
+    \UnaryInfC{$a \lor b \to b \lor a$}
+    \DisplayProof
+\end{center}
+
+
+\subsubsection{Coq tactics}
+The derivation rules in \cref{fig:natural-deduction-rules} correspond to the following tactics in Coq:
+
+\begin{center}
+    \begin{tabular}{l|l}
+        Coq tactic & Derivation rule(s) \\
+        \hline
+        \verb|intro| $x$. & $\Intro[x]\smallTo$ \\
+        \verb|apply| $x$. & Zero or more $\Elim \smallTo$ and $[...^x]$ \\
+        \verb|elim|. & $\Elim \land$, $\Elim \lor$ and $\Elim \bot$ \\
+        \verb|split|. & $\Intro \land$ \\
+        \verb|left|. & $\Intro\lor$$l$ \\
+        \verb|right|. & $\Intro\lor$$r$
+    \end{tabular}
+\end{center}
+
+
+\subsubsection{Detours}
+In lambda calculus, a $\beta$-redex has the form $(\lambda x : A.\ M) N$.
+By the Curry-Howard correspondence, a $\beta$-redex corresponds to a so-called \emph{detour} within a proof in minimal logic,
+which consists of introducing an implication with $\Intro[\hdots]\smallTo$ and then immediately eliminating
+the same implication with $\Elim \smallTo$.
+In general, such a detour can be removed via \emph{detour elimination} according to the following rule:
+
+\begin{center}
+    \begin{minipage}{.4\textwidth}
+        \begin{prooftreecustom}
+            \AxiomC{$ \begin{matrix} [A^x]\\[-1.5mm] \vdots\\ B \end{matrix}$}
+            \RightLabel{$\Intro[x]\smallTo$}
+            \UnaryInfC{$A \to B$}
+
+            \AxiomC{$\vdots$}\noLine
+            \UnaryInfC{$A$}
+
+            \RightLabel{$\Elim\smallTo$}
+            \BinaryInfC{$B$}
+        \end{prooftreecustom}
+    \end{minipage}%
+    \begin{minipage}{.1\textwidth}
+        \[ \to \]
+    \end{minipage}%
+    \begin{minipage}{.2\textwidth}
+        \[ \begin{matrix} \vdots\\ A\\ \vdots\\ B \end{matrix} \]
+    \end{minipage}
+\end{center}\vspace{2mm}
+
+A proof containing no detours is said to be in \emph{normal form}.
+As such, \emph{normalisation} of arbitrary proofs can be performed via repeated detour elimination,
+which corresponds to normalisation of terms via $\eval_\beta$.
+
+Similarly to $\beta$-reduction, proof normalisation does not necessarily shrink a proof tree:
+In the rule above, $[A^x]$ may be used many times in the proof of $B$.
+Replacing each occurence of $[A^x]$ with the full proof of $A$ may therefore exponentially increase
+the size of the derivation tree.

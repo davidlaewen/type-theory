@@ -1,0 +1,67 @@
+\section{Simply-typed lambda calculus}
+The \emph{simply-typed lambda calculus} (\emph{STLC}), also referred to as
+\emph{simple type theory} (\emph{STT}) and denoted by $\STLC$ is an extension of
+the lambda calculus we have discussed so far with a \emph{type system}.
+We use \emph{Church-style} notation, meaning that we annotate our terms and all binding variable
+occurrences within them with their corresponding types, e.g.:
+\[ \mathbf{K} \:\coloneqq\: \lambda x : A.\ \lambda y : B.\ x \:\ : \:\ A \to B \to A \]
+%
+Types and contexts for $\STLC$ are defined as follows:
+
+\begin{figure}[htbp]
+  \[
+  \begin{array}{r@{\hspace{.5em}}cl@{\hspace{2em}}r}
+    \multicolumn{4}{c}{x,y \in \textsc{Var} \quad \quad a,b \in \textsc{BaseType}}\\[2mm]
+    A, B & \Coloneqq & a & \emph{Base types} \\
+    & | & A \to B & \emph{Function types} \br
+    \Gamma & \Coloneqq & \epsilon \quad | \quad \Gamma,\ x : A & \emph{Contexts}
+  \end{array}
+  \]
+  \caption{Syntax of STLC types and contexts}
+  \Description{Syntax of STLC types and contexts}
+  \label{fig:stlc-types-grammar}
+\end{figure}
+
+The grammar remains nearly identical to that shown in \cref{fig:lambda-calculus-grammar}, except that
+lambda abstractions $\lambda x.\ M$ now feature type annotations, i.e. $\lambda x : A.\ M$.
+Typing judgments have the form $\Gamma \turnstile M : A$, stating that term $M$ has type $A$
+in context $\Gamma$.
+
+We now define the typing rules for $\STLC$:
+
+\begin{figure}[htbp]
+  \centering
+  %
+  \def\extraVskip{3pt}
+  \def\labelSpacing{4pt}
+  %
+  % Var
+  \AxiomC{$(x : A) \in \Gamma$}
+  \RightLabel{\textsc{T-Var}}
+  \UnaryInfC{$\Gamma \turnstile x : A$}
+  \DisplayProof \hskip 4mm
+  %
+  % Application
+  \AxiomC{$\Gamma \turnstile t_1 : A \to B$}
+  \AxiomC{$\Gamma \turnstile t_2 : A$}
+  \RightLabel{\textsc{T-App}}
+  \BinaryInfC{$\Gamma \turnstile t_1\ t_2 : B$}
+  \DisplayProof \hskip 4mm
+  %
+  % Abstraction
+  \AxiomC{$\Gamma, x : A \turnstile t : B$}
+  \RightLabel{\textsc{T-Abs}}
+  \UnaryInfC{$\Gamma \turnstile \lambda x : A.\ t\ :\ A \to B$}
+  \DisplayProof
+
+  \caption{Typing rules of $\STLC$}
+  \Description{Typing rules of $\STLC$}
+  \label{fig:stlc-typing-rules}
+\end{figure}
+
+So far, we have referred to all expressions described by the grammar in
+\cref{fig:lambda-calculus-grammar} as \emph{terms}. However, the term syntax permits the
+construction of terms that are not \emph{well-typed}, i.e. for which there does not exist
+some typing derivation $\Gamma \turnstile M : A$.
+To differentiate more clearly, we will instead refer to all expressions described by the
+term syntax as \emph{pre-terms} and only to well-typed pre-terms as \emph{terms}.
