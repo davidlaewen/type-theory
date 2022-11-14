@@ -1,7 +1,7 @@
 # Lecture notes for course Type Theory and Coq
 
 Compile with `make`, full compile (3x, to get the references) with `make full`.
-Requires LaTeX installation with `xelatex` on the path.
+Requires LaTeX installation with `pdflatex` on the path.
 
 The files for the individual sections are in the `content\` directory and must be referenced in `notes.tex`.
 
