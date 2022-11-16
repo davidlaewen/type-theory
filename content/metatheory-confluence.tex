@@ -1,0 +1,37 @@
+\section{Meta Theory and Confluence of Reduction}
+There are many interesting and important properties of type systems,
+which can proven in \emph{meta theory}.
+Some examples of such properties are:
+\begin{itemize}
+    \item Subject reduction (preservation of typing):
+            If $\Gamma \turnstile M : A$ and $M \to_\beta N$, then $\Gamma \turnstile N : A$.
+    \item Confluence of $\beta$-reduction:
+            If $M \eval_\beta P_1$ and $M \eval_\beta P_2$, then $\exists Q: (P_1 \eval_\beta Q \land P_2 \eval_\beta Q)$.
+    \item Normalisation:
+    \begin{itemize}
+        \item Weak normalisation (WN): A term $M$ is \emph{weakly normalising} if $\exists P \in \NF: (M \eval_\beta P)$,
+                where $\NF$ denotes the set of all terms in normal form.
+        \item Strong normalisation (SN): A term $M$ is \emph{strongly normalising} if
+                $\neg \exists (P_i)_{i \in \Nat}: M = P_0$ and $P_0 \to_\beta P_1 \to_\beta P_2 \to_\beta ...$,
+                i.e. there is no infinite reduction starting from $M$.
+    \end{itemize}
+\end{itemize}
+
+We first discuss the subject reduction as an example of a meta-theoretic proof.
+Many properties in meta theory are proven by induction on the typing derivation or the
+term grammar.
+
+\begin{lemma*}
+    \upshape If $ \Gamma \turnstile M : A$ and $M \to_\beta N$, then $\Gamma \turnstile N : A$.
+\end{lemma*}
+\begin{proof}
+    By induction on $M$.
+\end{proof}
+
+\subsection{Parallel reduction}
+Properties of parallel reduction ($\paraRed$):
+\begin{itemize}
+    \item $M \paraRed M$
+    \item If $M \to_\beta P$, then $M \paraRed P$.
+    \item If $M \paraRed P$, then $M \eval_\beta P$.
+\end{itemize}

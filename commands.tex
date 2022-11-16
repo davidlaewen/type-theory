@@ -26,11 +26,14 @@
 \newcommand{\eval}{\twoheadrightarrow}
 \newcommand{\Ok}{\textsf{Ok}}
 \newcommand{\Type}{\textsf{Type}}
+\newcommand{\paraRed}{\rightrightarrows}
 
 % Symbols
 \newcommand{\bigO}{\mathcal{O}}
+\newcommand{\Nat}{\mathbb{N}}
 \newcommand{\smallTo}{\ensuremath{\kern -.25em \shortrightarrow}}
 \newcommand{\STLC}{\ensuremath{\lambda\smallTo}}
+\newcommand{\NF}{\textsf{NF}}
 
 % Terms and types
 \newcommand{\True}{\top}
@@ -67,7 +70,9 @@
 \newcommand{\commentCol}{CadetBlue}
 
 
-% Environment definitons
+% Environment definitions
+\newtheorem*{lemma*}{Lemma}
+
 \newenvironment{prooftreecustom}
 	{\begin{prooftree}\def\extraVskip{4pt}\def\labelSpacing{3pt}}
 	{\end{prooftree}}

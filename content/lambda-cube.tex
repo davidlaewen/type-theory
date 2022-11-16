@@ -248,7 +248,6 @@ using the syntax of \cref{fig:second-order-prop-logic-syntax} as follows:
 
 These definitions correspond to the elimination rules, but we can show that they also yield the expected introduction rules.
 For instance, the we can show that $\Intro\lor$$l$ holds:
-
 \begin{center}
     \begin{prooftreecustom}
         \AxiomC{$[(A \to C)^x]$}
@@ -266,7 +265,7 @@ For instance, the we can show that $\Intro\lor$$l$ holds:
         \RightLabel{$\Intro\forall$}
         \UnaryInfC{$\forall c.\ (A \to c) \to (B \to c) \to c$}
     \end{prooftreecustom}
-\end{center}
+\end{center}\vspace{2mm}
 
 Similarly, we can prove that our definition of $\exists a. A$ matches the $\Elim\exists$ rule
 in \cref{fig:predicate-logic-rules}:

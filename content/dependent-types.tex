@@ -37,14 +37,14 @@ but we will instead consider full predicate logic in natural deduction style.
 \begin{figure}[htbp]
     \[
     \begin{array}{r@{\hspace{.5em}}cl@{\hspace{2em}}r}
-        A & \Coloneqq & p(M,...,M) & \emph{Predicate application} \\
-        & | & A \to A & \emph{Implication} \\
+        A, B & \Coloneqq & p(M,...,M) & \emph{Predicate application} \\
+        & | & A \to B & \emph{Implication} \\
         & | & \forall x. A & \emph{Universal quantification} \\
         & | & \exists x. A & \emph{Existential quantification} \\
         & | & \top & \emph{True} \\
         & | & \bot & \emph{False} \\
-        & | & A \land A & \emph{Conjunction} \\
-        & | & A \lor A & \emph{Disjunction}
+        & | & A \land B & \emph{Conjunction} \\
+        & | & A \lor B & \emph{Disjunction}
     \end{array}
     \]
     \caption{Proposition syntax of predicate logic}

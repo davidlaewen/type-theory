@@ -56,13 +56,16 @@ The corresponding non-dependent induction principle can be obtained from this by
 removing $\even\ n$ in the type of $P$, yielding $P : (\forall\ (n : \nat), \texttt{Prop})$,
 which simplifies to $P : (\nat \to \texttt{Prop})$.
 Adjusting all occurences of $P$ and simplifying by replacing quantifications with implications results in
-the following non-dependent principle:
+the following non-dependent induction principle:
 \begin{align*}
     \forall\ P : (&\nat \to \texttt{Prop}), \\
     (P&\ \texttt{O}) \\
     &\to \forall\ (n : \nat),\ \even\ n \to P\ n\ \to P\ (\Succ\ (\Succ\ n)) \\
     &\to \forall\ (n : \nat),\ \even\ n \to P\ n.
 \end{align*}
+
+The induction principles of an inductive type is always in \texttt{Prop},
+while the \emph{recursion principle} (or \emph{recursor}) is in \texttt{Set}.
 
 
 \subsection{Inversion}
